@@ -25,7 +25,7 @@ module.exports = (app) => {
   app.use(
     cors({
       credentials: true,
-      origin: [FRONTEND_URL],
+      origin:`http://localhost:5173`,
       allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept, Authorization",
     })
   );
