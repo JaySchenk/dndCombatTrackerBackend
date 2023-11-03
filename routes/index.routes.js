@@ -9,16 +9,16 @@ router.get("/", (req, res, next) => {
 // get all monsters
 router.get("/monsters", async (req, res, next) => {
   try {
-    const monsters = await Monster.find();  
+    const monsters = await Monster.find();
     return res.status(200).json({ monsters });
   } catch (error) {
-    console.error(error); 
+    console.error(error);
     return res.status(500).json({ error: 'Server error' });
   }
 });
 
 // get all environments for filter purpose
-router.get("/environments", async (req, res, next) => {
+router.get("/filter/environments", async (req, res, next) => {
   try {
     const result = await Monster.aggregate([
       { $unwind: "$environments" },
@@ -31,6 +31,22 @@ router.get("/environments", async (req, res, next) => {
     return res.status(500).json({ error: 'Server error' });
   }
 });
+
+// get all monster types for filter purpose
+router.get("/filter/types", async (req, res, next) => {
+  try {
+    const result = await Monster.aggregate([
+      { $unwind: "$type" },
+      { $group: { _id: "$type", count: { $sum: 1 } } },
+      { $project: { _id: 0, type: "$_id", count: 1 } }
+    ]);
+    return res.status(200).json({ types: result });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
 
 // get one individual monster
 router.get("/monster/:monsterId", async (req, res, next) => {
