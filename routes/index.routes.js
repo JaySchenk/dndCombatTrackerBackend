@@ -17,6 +17,22 @@ router.get("/monsters", async (req, res, next) => {
   }
 });
 
+// get one individual monster
+router.get("/monster/:monsterId", async (req, res, next) => {
+  const { monsterId } = req.params;
+  const requestOrigin = req.get("origin");
+  try {
+    const monster = await Monster.findById(monsterId);
+    if (!monster) {
+      return res.status(404).json({ message: `Monster not found` });
+    }
+    return res.status(200).json({ monster });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // get all environments for filter purpose
 router.get("/filter/environments", async (req, res, next) => {
   try {
@@ -47,17 +63,15 @@ router.get("/filter/types", async (req, res, next) => {
   }
 });
 
-
-// get one individual monster
-router.get("/monster/:monsterId", async (req, res, next) => {
-  const { monsterId } = req.params;
-  const requestOrigin = req.get("origin");
+// get all monster alignment for filter purpose
+router.get("/filter/alignment", async (req, res, next) => {
   try {
-    const monster = await Monster.findById(monsterId);
-    if (!monster) {
-      return res.status(404).json({ message: `Monster not found` });
-    }
-    return res.status(200).json({ monster });
+    const result = await Monster.aggregate([
+      { $unwind: "$alignment" },
+      { $group: { _id: "$alignment", count: { $sum: 1 } } },
+      { $project: { _id: 0, type: "$_id", count: 1 } }
+    ]);
+    return res.status(200).json({ alignment: result });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Server error' });
